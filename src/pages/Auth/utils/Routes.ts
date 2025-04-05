@@ -1,0 +1,18 @@
+export const AuthLinks = {
+    auth: '/auth/*',
+    authLink: "/auth",
+    signUp: "sign-up",
+    signUpLink: "/auth/sign-up",
+    signIn: "sign-in",
+    signInLink: "/auth/sign-in",
+    logOut: "logout",
+    logOutLink: "/auth/logout",
+    forgotPassword: "forgot-password",
+    forgotPasswordLink: "/auth/forgot-password",
+    resetPassword: "reset-password",
+    resetPasswordLink: "/auth/reset-password",
+    setNewPassword: "set-new-password",
+    setNewPasswordLink: "/auth/set-new-password",
+    allDone: "all-done",
+    allDoneLink: "/auth/all-done",
+}
