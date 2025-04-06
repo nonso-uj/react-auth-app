@@ -24,7 +24,7 @@ const Dashboard = () => {
 
   const [tasks, setTasks] = useState<any[]>([]);
 
-  const { values, handleChange, handleSubmit, errors, setErrors } = useFormik({
+  const { values, setValues, handleChange, handleSubmit, errors, setErrors } = useFormik({
     initialValues: {
       name: "",
     },
@@ -43,6 +43,7 @@ const Dashboard = () => {
         setShowToast(true);
         setAuthError(response?.data?.message);
         setOpenModal(false);
+        setValues({ name: "" })
       })
       .catch((error) => {
         setAuthError(error.response.data.error);
