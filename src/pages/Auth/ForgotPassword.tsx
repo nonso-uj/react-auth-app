@@ -18,7 +18,6 @@ const ForgotPassword = () => {
       email: "",
     },
     onSubmit: (values) => {
-      console.log("first= ", values);
       setAuthError("");
       resetPassword(values);
     },
@@ -28,12 +27,10 @@ const ForgotPassword = () => {
     setLoading(true);
     axios
       .post(API_URL + "/auth/forgot-password", { ...items })
-      .then((response) => {
-        console.log({ ...response?.data });
+      .then(() => {
         setEmailSent(true);
       })
       .catch((error) => {
-        console.log(error);
         setAuthError(error.response.data.error);
       })
       .finally(() => {

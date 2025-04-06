@@ -8,6 +8,15 @@ import { useFormik } from "formik";
 import { signInSchema } from "./utils/ValidationSchema";
 import { useAppDispatch } from "../../redux/hooks";
 import { updateUser } from "./_redux/userSlice";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+
+interface GoogleJwtPayload extends JwtPayload {
+  googleId: string;
+  email: string;
+  given_name: string;
+  family_name: string;
+}
 
 const Login = () => {
   const dispatch = useAppDispatch();
@@ -23,7 +32,6 @@ const Login = () => {
     },
     validationSchema: signInSchema,
     onSubmit: (values) => {
-      console.log("first= ", values);
       setAuthError("");
       loginUser(values);
     },
@@ -34,12 +42,10 @@ const Login = () => {
     axios
       .post(API_URL + "/auth/login", { ...items })
       .then((response) => {
-        console.log({ ...response?.data });
         dispatch(updateUser({ ...response?.data }));
         navigate("/");
       })
       .catch((error) => {
-        console.log(error);
         setAuthError(error.response.data.error);
       })
       .finally(() => {
@@ -180,13 +186,37 @@ const Login = () => {
                   {authError && authError}
                 </span>
 
-                <div
-                  id="g_id_onload"
-                  data-client_id="YOUR_GOOGLE_CLIENT_ID"
-                  data-login_uri={`${window.location.protocol}//${window.location.host}`}
-                  data-your_own_param_1_to_login="any_value"
-                  data-your_own_param_2_to_login="any_value"
-                ></div>
+                <div className="w-full flex flex-col items-center justify-center mt-3">
+                  <GoogleLogin
+                    onSuccess={(credentialResponse: any) => {
+                      const userInfo = jwtDecode<GoogleJwtPayload>(
+                        credentialResponse.credential
+                      );
+
+                      setLoading(true);
+                      axios
+                        .post(API_URL + "/auth/google", {
+                          googleId: userInfo.sub,
+                          firstName: userInfo.given_name,
+                          lastName: userInfo.family_name,
+                          email: userInfo.email,
+                        })
+                        .then((response) => {
+                          dispatch(updateUser({ ...response?.data }));
+                          navigate("/");
+                        })
+                        .catch((error) => {
+                          setAuthError(error.response.data.error);
+                        })
+                        .finally(() => {
+                          setLoading(false);
+                        });
+                    }}
+                    onError={() => {
+                      setAuthError("Login Failed");
+                    }}
+                  />
+                </div>
               </div>
 
               <p className="text-center small">

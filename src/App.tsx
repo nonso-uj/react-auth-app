@@ -8,10 +8,7 @@ import { AppLinks } from './utils/Routes'
 import Settings from './pages/Settings'
 
 function App() {
-  // const user = useAppSelector((state) => state.user.user);
   const isLoggedIn = useAppSelector((state) => !!state.user.user);
-
-  console.log('first= ', isLoggedIn);
 
   return (
    <BrowserRouter>

@@ -22,7 +22,6 @@ const Register = () => {
     },
     validationSchema: signUpSchema,
     onSubmit: (values) => {
-      console.log("first= ", values);
       setAuthError("");
       registerUser(values);
     },
@@ -32,12 +31,10 @@ const Register = () => {
     setLoading(true);
     axios
       .post(API_URL + "/auth/register", { ...items })
-      .then((response) => {
-        console.log(response);
+      .then(() => {
         navigate(AuthLinks.authLink);
       })
       .catch((error) => {
-        console.log(error);
         setAuthError(error.response.data.error);
       })
       .finally(() => {
