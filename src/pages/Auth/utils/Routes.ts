@@ -9,8 +9,6 @@ export const AuthLinks = {
     logOutLink: "/auth/logout",
     forgotPassword: "forgot-password",
     forgotPasswordLink: "/auth/forgot-password",
-    resetPassword: "reset-password",
-    resetPasswordLink: "/auth/reset-password",
     setNewPassword: "set-new-password",
     setNewPasswordLink: "/auth/set-new-password",
     allDone: "all-done",
