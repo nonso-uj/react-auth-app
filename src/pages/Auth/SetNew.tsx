@@ -1,11 +1,11 @@
 import { Link, useNavigate, useSearchParams } from "react-router";
 import AuthPageLayout from "./components/AuthPageLayout";
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../../redux/urls";
+import { AUTH_URL } from "../../redux/urls";
 import { passwordResetSchema } from "./utils/ValidationSchema";
 import { useFormik } from "formik";
 import { AuthLinks } from "./utils/Routes";
+import BASE_URL from "./_redux/axios";
 
 const SetNew = () => {
   const navigate = useNavigate();
@@ -30,8 +30,8 @@ const SetNew = () => {
 
   const setNewPassword = (items: any) => {
     setLoading(true);
-    axios
-      .post(API_URL + "/auth/set-new-password", { ...items, token: token })
+    BASE_URL
+      .post(AUTH_URL + "/auth/set-new-password", { ...items, token: token })
       .then(() => {
         navigate(AuthLinks.allDoneLink);
       })

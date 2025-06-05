@@ -4,13 +4,15 @@ import DashboardLayout from "../components/DashboardLayout";
 import { useEffect, useState } from "react";
 import { taskSchema } from "./Auth/utils/ValidationSchema";
 import { useFormik } from "formik";
-import { API_URL } from "../redux/urls";
+import { TASK_URL } from "../redux/urls";
 import BASE_URL from "./Auth/_redux/axios";
 import {
   Checkbox,
   Modal,
   ModalBody,
   ModalHeader,
+  Pagination,
+  Spinner,
   Toast,
   ToastToggle,
 } from "flowbite-react";
@@ -21,32 +23,48 @@ const Dashboard = () => {
   const [authError, setAuthError] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [tasksLimit, setTasksLimit] = useState(5);
+  const [totalTasks, setTotalTasks] = useState(1);
   const [tasks, setTasks] = useState<any[]>([]);
 
-  const { values, setValues, handleChange, handleSubmit, errors, setErrors } = useFormik({
-    initialValues: {
-      name: "",
-    },
-    validationSchema: taskSchema,
-    onSubmit: (values) => {
-      setAuthError("");
-      addTask(values);
-    },
-  });
+  console.log('totalPages= ', totalPages, totalTasks)
+
+  const onPageChange = (page: number) => {
+    if (page <= totalPages) {
+      setCurrentPage(page);
+      getTasks(page);
+    } else {
+      setAuthError("Error: There are no more tasks");
+      setShowToast(true);
+    }
+  };
+
+  const { values, setValues, handleChange, handleSubmit, errors, setErrors } =
+    useFormik({
+      initialValues: {
+        name: "",
+      },
+      validationSchema: taskSchema,
+      onSubmit: (values) => {
+        setAuthError("");
+        addTask(values);
+      },
+    });
 
   const addTask = (items: any) => {
     setLoading(true);
-    BASE_URL.post(API_URL + "/task", { ...items })
+    BASE_URL.post(TASK_URL + "/task", { ...items })
       .then((response) => {
-        setTasks([...response?.data?.tasks]);
+        getTasks(currentPage);
         setShowToast(true);
         setAuthError(response?.data?.message);
         setOpenModal(false);
-        setValues({ name: "" })
+        setValues({ name: "" });
       })
       .catch((error) => {
-        setAuthError(error.response.data.error);
+        setAuthError("Error: " + error.response.data.error);
         setShowToast(true);
       })
       .finally(() => {
@@ -54,14 +72,18 @@ const Dashboard = () => {
       });
   };
 
-  const getTasks = () => {
+  const getTasks = (page=currentPage) => {
     setLoading(true);
-    BASE_URL.get(API_URL + "/task")
+    BASE_URL.get(`${TASK_URL}/task?limit=${tasksLimit}&page=${page}`)
       .then((response) => {
         setTasks([...response?.data?.tasks]);
+        setCurrentPage(parseInt(response?.data?.page));
+        setTasksLimit(parseInt(response?.data?.limit));
+        setTotalTasks(parseInt(response?.data?.total));
+        setTotalPages(parseInt(response?.data?.pages));
       })
       .catch((error) => {
-        setAuthError(error.response.data.error);
+        setAuthError("Error: " + error.response.data.error);
         setShowToast(true);
       })
       .finally(() => {
@@ -71,17 +93,17 @@ const Dashboard = () => {
 
   const updateTask = (task: any) => {
     setLoading(true);
-    BASE_URL.patch(API_URL + "/task/" + task._id, {
+    BASE_URL.patch(TASK_URL + "/task/" + task._id, {
       ...task,
       status: !task?.status,
     })
       .then((response) => {
-        setTasks([...response?.data?.tasks]);
+        getTasks(currentPage);
         setShowToast(true);
         setAuthError(response?.data?.message);
       })
       .catch((error) => {
-        setAuthError(error.response.data.error);
+        setAuthError("Error: " + error.response.data.error);
         setShowToast(true);
       })
       .finally(() => {
@@ -91,14 +113,14 @@ const Dashboard = () => {
 
   const deleteTask = (taskId: any) => {
     setLoading(true);
-    BASE_URL.delete(API_URL + "/task/" + taskId)
+    BASE_URL.delete(TASK_URL + "/task/" + taskId)
       .then((response) => {
-        setTasks([...response?.data?.tasks]);
+        getTasks(currentPage);
         setShowToast(true);
         setAuthError(response?.data?.message);
       })
       .catch((error) => {
-        setAuthError(error.response.data.error);
+        setAuthError("Error: " + error.response.data.error);
         setShowToast(true);
       })
       .finally(() => {
@@ -223,76 +245,97 @@ const Dashboard = () => {
                     </thead>
 
                     <tbody>
-                      {tasks && tasks.length ? (
-                        <>
-                          {searchFiltered?.map((task, i) => (
-                            <tr key={task?._id}>
-                              <td>
-                                <strong>{i + 1}</strong>
-                              </td>
-
-                              <td colSpan={3}>
-                                <i className="fab fa-angular fa-lg text-danger me-3"></i>{" "}
-                                <strong>{task?.name}</strong>
-                              </td>
-
-                              <td className="text-center">
-                                <Checkbox
-                                  name="status"
-                                  onChange={() => updateTask(task)}
-                                  checked={task.status && task.status}
-                                />
-                              </td>
-
-                              <td>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  x="0px"
-                                  y="0px"
-                                  width="25"
-                                  height="25"
-                                  viewBox="0,0,256,256"
-                                  className="cursor-pointer mx-auto"
-                                  onClick={() => deleteTask(task._id)}
-                                >
-                                  <g
-                                    fill="#fa5252"
-                                    fillRule="nonzero"
-                                    stroke="none"
-                                    strokeWidth="1"
-                                    strokeLinecap="butt"
-                                    strokeLinejoin="miter"
-                                    strokeMiterlimit="10"
-                                    strokeDasharray=""
-                                    strokeDashoffset="0"
-                                    fontFamily="none"
-                                    fontWeight="none"
-                                    fontSize="none"
-                                    textAnchor="none"
-                                    style={{ mixBlendMode: "normal" }}
-                                  >
-                                    <g transform="scale(8.53333,8.53333)">
-                                      <path d="M14.98438,2.48633c-0.55152,0.00862 -0.99193,0.46214 -0.98437,1.01367v0.5h-5.5c-0.26757,-0.00363 -0.52543,0.10012 -0.71593,0.28805c-0.1905,0.18793 -0.29774,0.44436 -0.29774,0.71195h-1.48633c-0.36064,-0.0051 -0.69608,0.18438 -0.87789,0.49587c-0.18181,0.3115 -0.18181,0.69676 0,1.00825c0.18181,0.3115 0.51725,0.50097 0.87789,0.49587h18c0.36064,0.0051 0.69608,-0.18438 0.87789,-0.49587c0.18181,-0.3115 0.18181,-0.69676 0,-1.00825c-0.18181,-0.3115 -0.51725,-0.50097 -0.87789,-0.49587h-1.48633c0,-0.26759 -0.10724,-0.52403 -0.29774,-0.71195c-0.1905,-0.18793 -0.44836,-0.29168 -0.71593,-0.28805h-5.5v-0.5c0.0037,-0.2703 -0.10218,-0.53059 -0.29351,-0.72155c-0.19133,-0.19097 -0.45182,-0.29634 -0.72212,-0.29212zM6,9l1.79297,15.23438c0.118,1.007 0.97037,1.76563 1.98438,1.76563h10.44531c1.014,0 1.86538,-0.75862 1.98438,-1.76562l1.79297,-15.23437z"></path>
-                                    </g>
-                                  </g>
-                                </svg>
-                              </td>
-                            </tr>
-                          ))}
-                        </>
-                      ) : (
+                      {loading ? (
                         <tr>
                           <td colSpan={6} className="text-center">
-                            <strong>No tasks yet, add a task to begin!</strong>
+                            <Spinner size="xl" />
                           </td>
                         </tr>
+                      ) : (
+                        <>
+                          {tasks && tasks.length ? (
+                            <>
+                              {searchFiltered?.map((task, i) => (
+                                <tr key={task?._id}>
+                                  <td>
+                                    <strong>{((currentPage-1) * tasksLimit) + i + 1}</strong>
+                                  </td>
+
+                                  <td colSpan={3}>
+                                    <i className="fab fa-angular fa-lg text-danger me-3"></i>{" "}
+                                    <strong>{task?.name}</strong>
+                                  </td>
+
+                                  <td className="text-center">
+                                    <Checkbox
+                                      name="status"
+                                      onChange={() => updateTask(task)}
+                                      checked={task.status && task.status}
+                                    />
+                                  </td>
+
+                                  <td>
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      x="0px"
+                                      y="0px"
+                                      width="25"
+                                      height="25"
+                                      viewBox="0,0,256,256"
+                                      className="cursor-pointer mx-auto"
+                                      onClick={() => deleteTask(task._id)}
+                                    >
+                                      <g
+                                        fill="#fa5252"
+                                        fillRule="nonzero"
+                                        stroke="none"
+                                        strokeWidth="1"
+                                        strokeLinecap="butt"
+                                        strokeLinejoin="miter"
+                                        strokeMiterlimit="10"
+                                        strokeDasharray=""
+                                        strokeDashoffset="0"
+                                        fontFamily="none"
+                                        fontWeight="none"
+                                        fontSize="none"
+                                        textAnchor="none"
+                                        style={{ mixBlendMode: "normal" }}
+                                      >
+                                        <g transform="scale(8.53333,8.53333)">
+                                          <path d="M14.98438,2.48633c-0.55152,0.00862 -0.99193,0.46214 -0.98437,1.01367v0.5h-5.5c-0.26757,-0.00363 -0.52543,0.10012 -0.71593,0.28805c-0.1905,0.18793 -0.29774,0.44436 -0.29774,0.71195h-1.48633c-0.36064,-0.0051 -0.69608,0.18438 -0.87789,0.49587c-0.18181,0.3115 -0.18181,0.69676 0,1.00825c0.18181,0.3115 0.51725,0.50097 0.87789,0.49587h18c0.36064,0.0051 0.69608,-0.18438 0.87789,-0.49587c0.18181,-0.3115 0.18181,-0.69676 0,-1.00825c-0.18181,-0.3115 -0.51725,-0.50097 -0.87789,-0.49587h-1.48633c0,-0.26759 -0.10724,-0.52403 -0.29774,-0.71195c-0.1905,-0.18793 -0.44836,-0.29168 -0.71593,-0.28805h-5.5v-0.5c0.0037,-0.2703 -0.10218,-0.53059 -0.29351,-0.72155c-0.19133,-0.19097 -0.45182,-0.29634 -0.72212,-0.29212zM6,9l1.79297,15.23438c0.118,1.007 0.97037,1.76563 1.98438,1.76563h10.44531c1.014,0 1.86538,-0.75862 1.98438,-1.76562l1.79297,-15.23437z"></path>
+                                        </g>
+                                      </g>
+                                    </svg>
+                                  </td>
+                                </tr>
+                              ))}
+                            </>
+                          ) : (
+                            <tr>
+                              <td colSpan={6} className="text-center">
+                                <strong>No tasks yet, add a task to begin!</strong>
+                              </td>
+                            </tr>
+                          )}
+                        </>
                       )}
                     </tbody>
 
                     <tfoot className="table-border-bottom-0 p-3">
                       <tr>
-                        <th colSpan={5}>Total Tasks</th>
-                        <th className="text-end">{tasks?.length}</th>
+                        <th colSpan={6}>
+                          <div className="flex overflow-x-auto sm:justify-center">
+                            <Pagination
+                              // layout="table"
+                              currentPage={currentPage}
+                              totalPages={totalPages}
+                              // itemsPerPage={tasksLimit}
+                              // totalItems={totalTasks}
+                              onPageChange={onPageChange}
+                              showIcons
+                            />
+                          </div>
+                        </th>
                       </tr>
                     </tfoot>
                   </table>
@@ -324,7 +367,12 @@ const Dashboard = () => {
         <div className="content-backdrop fade"></div>
       </div>
 
-      <Modal dismissible show={openModal} onClose={() => setOpenModal(false)}>
+      <Modal
+        dismissible
+        show={openModal}
+        onClose={() => setOpenModal(false)}
+        position={"center"}
+      >
         <ModalHeader className="p-4">Add a Task</ModalHeader>
         <ModalBody>
           <div className="w-full h-full flex flex-col items-stretch justify-start p-3">
@@ -371,7 +419,7 @@ const Dashboard = () => {
       </Modal>
 
       {(showToast || authError) && (
-        <Toast className="fixed top-2 right-2 px-3">
+        <Toast className="fixed top-2 right-2 px-3 z-[1000]">
           <div className="ml-3 text-sm font-normal">{authError}</div>
           <ToastToggle
             onDismiss={() => {

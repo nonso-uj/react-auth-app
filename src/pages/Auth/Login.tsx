@@ -3,13 +3,14 @@ import { useState } from "react";
 import "./assets/page-auth.css";
 import { AuthLinks } from "./utils/Routes";
 import axios from "axios";
-import { API_URL } from "../../redux/urls";
+import { AUTH_URL } from "../../redux/urls";
 import { useFormik } from "formik";
 import { signInSchema } from "./utils/ValidationSchema";
 import { useAppDispatch } from "../../redux/hooks";
 import { updateUser } from "./_redux/userSlice";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode, JwtPayload } from "jwt-decode";
+import BASE_URL from "./_redux/axios";
 
 interface GoogleJwtPayload extends JwtPayload {
   googleId: string;
@@ -39,10 +40,14 @@ const Login = () => {
 
   const loginUser = (items: any) => {
     setLoading(true);
-    axios
-      .post(API_URL + "/auth/login", { ...items })
+    BASE_URL
+      .post(
+        AUTH_URL + "/auth/login",
+        { ...items },
+      )
       .then((response) => {
         dispatch(updateUser({ ...response?.data }));
+        console.log("first res=== ", response);
         navigate("/");
       })
       .catch((error) => {
@@ -195,7 +200,7 @@ const Login = () => {
 
                       setLoading(true);
                       axios
-                        .post(API_URL + "/auth/google", {
+                        .post(AUTH_URL + "/auth/google", {
                           googleId: userInfo.sub,
                           firstName: userInfo.given_name,
                           lastName: userInfo.family_name,

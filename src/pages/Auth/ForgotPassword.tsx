@@ -1,12 +1,11 @@
 import { Link } from "react-router";
 import { useState } from "react";
 import AuthPageLayout from "./components/AuthPageLayout";
-
 import "./assets/page-auth.css";
 import { AuthLinks } from "./utils/Routes";
 import { useFormik } from "formik";
-import axios from "axios";
-import { API_URL } from "../../redux/urls";
+import { AUTH_URL } from "../../redux/urls";
+import BASE_URL from "./_redux/axios";
 
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
@@ -25,8 +24,8 @@ const ForgotPassword = () => {
 
   const resetPassword = (items: any) => {
     setLoading(true);
-    axios
-      .post(API_URL + "/auth/forgot-password", { ...items })
+    BASE_URL
+      .post(AUTH_URL + "/auth/forgot-password", { ...items })
       .then(() => {
         setEmailSent(true);
       })

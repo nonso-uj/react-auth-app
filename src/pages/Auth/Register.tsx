@@ -4,8 +4,8 @@ import { useFormik } from "formik";
 import { signUpSchema } from "./utils/ValidationSchema";
 import { AuthLinks } from "./utils/Routes";
 import "./assets/page-auth.css";
-import axios from "axios";
-import { API_URL } from "../../redux/urls";
+import { AUTH_URL } from "../../redux/urls";
+import BASE_URL from "./_redux/axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -29,8 +29,8 @@ const Register = () => {
 
   const registerUser = (items: any) => {
     setLoading(true);
-    axios
-      .post(API_URL + "/auth/register", { ...items })
+    BASE_URL
+      .post(AUTH_URL + "/auth/register", { ...items })
       .then(() => {
         navigate(AuthLinks.authLink);
       })
