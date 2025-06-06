@@ -1,6 +1,6 @@
 # Task Manager Frontend
 
-![Task Manager Screenshot](./screenshot.png) <!-- Add a screenshot if available -->
+![Task Manager Screenshot](./app-screenshot.png) <!-- Add a screenshot if available -->
 
 A modern, responsive task management application built with React and Vite. This frontend connects to a Node.js/Express backend with MongoDB to provide a complete task management solution with JWT authentication.
 
