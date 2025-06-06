@@ -6,6 +6,9 @@ import App from "./App.tsx";
 import { persistor, store } from "./redux/store.ts";
 import { PersistGate } from "redux-persist/integration/react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import axios from "axios";
+
+axios.defaults.withCredentials = true;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
