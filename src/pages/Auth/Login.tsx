@@ -28,8 +28,8 @@ const Login = () => {
 
   const { values, handleChange, handleSubmit, errors } = useFormik({
     initialValues: {
-      email: "",
-      password: "",
+      email: "user.test@email.com",
+      password: "test@Us3r",
     },
     validationSchema: signInSchema,
     onSubmit: (values) => {
@@ -40,11 +40,7 @@ const Login = () => {
 
   const loginUser = (items: any) => {
     setLoading(true);
-    BASE_URL
-      .post(
-        AUTH_URL + "/auth/login",
-        { ...items },
-      )
+    BASE_URL.post(AUTH_URL + "/auth/login", { ...items })
       .then((response) => {
         dispatch(updateUser({ ...response?.data }));
         console.log("first res=== ", response);
